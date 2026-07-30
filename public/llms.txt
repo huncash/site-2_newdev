@@ -1,0 +1,25 @@
+# projektorlampacsere.hu
+
+> Projektor lámpamodulok szakosított B2B beszállítója intézményeknek, AV integrátoroknak és viszonteladóknak. Üzemeltető: ADP-TOP Kft.
+
+A projektorlampacsere.hu eredeti gyári izzós, utángyártott házba szerelt projektor lámpamodulokat és teljes gyári OEM modulokat szállít — készletre szerződött ellátással, jellemzően 4–12 munkanapos átfutással, tételes áfás számlával.
+
+## Pages
+
+- [Főoldal](/): Áttekintés, kiemelt termékek, ellátási modell.
+- [Rólunk](/about): Az ADP-TOP Kft. és az ellátási modell bemutatása.
+- [Katalógus](/catalog): Teljes termékkatalógus cikkszám, gyártó és kategória szerint.
+- [Árképzés](/arazas): Minőség, ár és átfutási idő összefüggése.
+- [Megtakarítás](/megtakaritas): OEM és utángyártott házas modul ár-összehasonlítás.
+- [B2B feltételek](/b2b): Viszonteladói és intézményi együttműködési feltételek.
+- [Csere útmutató](/csere-utmutato): Lámpamodul cseréjének lépései.
+- [Illusztrált csere útmutató](/csere-utmutato/illusztralt): Képes csere útmutató.
+- [GYIK](/gyik): Gyakori kérdések — választás, garancia, szállítás.
+- [Kapcsolat](/contact): Kapcsolat és árajánlat-kérés.
+- [Árajánlatkérés](/quote): Tételes árajánlat-kérő űrlap.
+
+## Optional
+
+- [ÁSZF](/aszf): Általános Szerződési Feltételek.
+- [Adatkezelési tájékoztató](/adatvedelem): GDPR adatkezelési tájékoztató.
+- [Impresszum](/impresszum): Üzemeltetői és tárhely-adatok.
