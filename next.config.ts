@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_SITE_ID: "site-2",
   },
-  serverExternalPackages: ["better-sqlite3", "bcryptjs"],
+  serverExternalPackages: ["bcryptjs"],
 };
 
 export default nextConfig;

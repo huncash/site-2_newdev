@@ -1,14 +1,9 @@
 import type { Config } from "tailwindcss";
-import { themeConfig } from "../shared-core/styles/theme";
+import { themeConfig } from "./src/styles/theme";
 
 const config: Config = {
   darkMode: ["class"],
-  content: [
-    "./src/**/*.{ts,tsx}",
-    "../shared-core/src/**/*.{ts,tsx}",
-    "../shared-core/templates/**/*.{ts,tsx}",
-    "../shared-core/auth/**/*.{ts,tsx}",
-  ],
+  content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
