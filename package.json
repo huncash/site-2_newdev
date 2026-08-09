@@ -6,7 +6,8 @@
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start --port 3001",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "deploy": "git add . && git commit -m \"Auto deploy\" && git push origin main && ssh vmvrgohu@195.228.152.141 \"cd /var/www/site-2 && git remote set-url origin https://github.com/huncash/site-2_newdev.git && git fetch origin && git reset --hard origin/main && npm install && rm -rf .next && npm run build && pm2 delete site-2 || true && pm2 start npm --name site-2 -- start && pm2 save\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
