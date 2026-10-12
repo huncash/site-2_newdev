@@ -1,0 +1,46 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vps-deploy-site-2
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Validate VPS SSH key secret
+        run: |
+          test -n "${{ secrets.VPS_SSH_KEY }}" || (echo "Missing VPS_SSH_KEY secret" && exit 1)
+
+      - name: Build and restart site-2 on VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 195.228.152.141
+          username: deploy
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script_stop: true
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            APP_DIR=/var/www/site-2
+            APP_NAME=site-2
+            test -d "$APP_DIR"
+            cd "$APP_DIR"
+            git remote set-url origin https://github.com/huncash/site-2_newdev.git
+            git fetch origin
+            git reset --hard origin/main
+            npm install
+            rm -rf .next
+            npm run build
+            pm2 delete "$APP_NAME" || true
+            pm2 start npm --name "$APP_NAME" -- start
+            pm2 save
+            ss -lptn | grep -E ':3001\b' || true
+            pm2 status
