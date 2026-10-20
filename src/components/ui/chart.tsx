@@ -1,9 +1,11 @@
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
+import { chartSurfaceProps } from "@/components/ui/chart-surface";
 import { cn } from "@/lib/utils";
 
-// Format: { THEME_NAME: CSS_SELECTOR }
+// A `dark` kulcs a config típusában megmarad, a ChartStyle viszont csak a
+// világos színt írja ki: a diagramfelület témafüggetlen.
 const THEMES = { light: "", dark: ".dark" } as const;
 
 export type ChartConfig = {
@@ -38,20 +40,23 @@ const ChartContainer = React.forwardRef<
     config: ChartConfig;
     children: React.ComponentProps<typeof RechartsPrimitive.ResponsiveContainer>["children"];
   }
->(({ id, className, children, config, ...props }, ref) => {
+>(({ id, className, children, config, style, ...props }, ref) => {
   const uniqueId = React.useId();
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
+  const surface = chartSurfaceProps({ className, style });
 
   return (
     <ChartContext.Provider value={{ config }}>
       <div
         data-chart={chartId}
+        data-chart-surface="light"
         ref={ref}
-        className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
-          className,
-        )}
         {...props}
+        className={cn(
+          surface.className,
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-[#6B7280] [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#E2E5EB] [&_.recharts-curve.recharts-tooltip-cursor]:stroke-[#E2E5EB] [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[#E2E5EB] [&_.recharts-radial-bar-background-sector]:fill-[#F3F5F8] [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[#F3F5F8] [&_.recharts-reference-line_[stroke='#ccc']]:stroke-[#E2E5EB] [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
+        )}
+        style={surface.style}
       >
         <ChartStyle id={chartId} config={config} />
         <RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
@@ -71,20 +76,16 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+        __html: `
+[data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+    const color = itemConfig.color || itemConfig.theme?.light;
     return color ? `  --color-${key}: ${color};` : null;
   })
   .join("\n")}
 }
 `,
-          )
-          .join("\n"),
       }}
     />
   );
@@ -159,7 +160,7 @@ const ChartTooltipContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
+          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-[#E2E5EB] bg-white px-2.5 py-1.5 text-xs text-[#1A1F2E] shadow-xl",
           className,
         )}
       >

@@ -12,9 +12,10 @@ export function middleware(request: NextRequest) {
   const isLogin =
     pathname === "/admin/login" || pathname.startsWith("/admin/login/");
   const isLoginApi = pathname.startsWith("/api/admin/login");
+  const isPriceApprove = pathname === "/api/admin/price-approve";
 
   if (pathname.startsWith("/api/admin")) {
-    if (isLoginApi) {
+    if (isLoginApi || isPriceApprove) {
       return NextResponse.next({ request: { headers: requestHeaders } });
     }
     const token = request.cookies.get(SESSION_COOKIE)?.value;

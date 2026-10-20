@@ -12,6 +12,7 @@ import {
   averageSavingsPct,
 } from "@/data/savings";
 import { canonical } from "@/lib/seo";
+import { chartColors, chartSurfaceProps } from "@/components/ui/chart-surface";
 
 function MegtakaritasPage() {
   const avgAfter = averageAftermarketPct();
@@ -148,8 +149,12 @@ function MegtakaritasPage() {
 /* -------------------------------------------------------------------------- */
 
 function ModuleDiagram() {
+  const surface = chartSurfaceProps({ className: "rounded-md p-3" });
+  const c = chartColors;
+
   return (
     <figure className="m-0">
+      <div className={surface.className} style={surface.style} data-chart-surface="light">
       <svg
         viewBox="0 0 380 260"
         role="img"
@@ -159,35 +164,32 @@ function ModuleDiagram() {
         {/* ===== Projektor teste (a teljes készülék körvonala) ===== */}
         <rect
           x="30" y="70" width="190" height="120" rx="10"
-          fill="color-mix(in oklab, var(--muted) 35%, transparent)"
-          stroke="currentColor" strokeWidth="1.5"
-          className="text-foreground"
+          fill={c.wash}
+          stroke={c.ink} strokeWidth="1.5"
         />
         {/* Lencse a projektor elején */}
         <circle
           cx="220" cy="130" r="14"
-          fill="color-mix(in oklab, var(--accent-amber) 15%, transparent)"
-          stroke="currentColor" strokeWidth="1.2"
-          className="text-foreground"
+          fill={c.lens}
+          stroke={c.ink} strokeWidth="1.2"
         />
         <circle
           cx="220" cy="130" r="7"
-          fill="none" stroke="currentColor" strokeWidth="0.8"
-          className="text-muted-foreground"
+          fill="none" stroke={c.muted} strokeWidth="0.8"
         />
         {/* Szellőzőrácsok jelzése a házon */}
-        <line x1="42" y1="80" x2="42" y2="180" stroke="currentColor" strokeWidth="0.5" className="text-muted-foreground" />
-        <line x1="48" y1="80" x2="48" y2="180" stroke="currentColor" strokeWidth="0.5" className="text-muted-foreground" />
+        <line x1="42" y1="80" x2="42" y2="180" stroke={c.muted} strokeWidth="0.5" />
+        <line x1="48" y1="80" x2="48" y2="180" stroke={c.muted} strokeWidth="0.5" />
         {/* Lábak */}
-        <rect x="60"  y="190" width="14" height="6" rx="1" fill="currentColor" className="text-muted-foreground" />
-        <rect x="180" y="190" width="14" height="6" rx="1" fill="currentColor" className="text-muted-foreground" />
+        <rect x="60"  y="190" width="14" height="6" rx="1" fill={c.muted} />
+        <rect x="180" y="190" width="14" height="6" rx="1" fill={c.muted} />
         {/* Halvány fénykúp a lencséből */}
         <path
           d="M 234 122 L 295 98 L 295 162 L 234 138 Z"
-          fill="color-mix(in oklab, var(--cta) 25%, transparent)"
-          stroke="currentColor" strokeWidth="0.6"
+          fill={c.cta}
+          fillOpacity="0.35"
+          stroke={c.muted} strokeWidth="0.6"
           strokeDasharray="3 3"
-          className="text-muted-foreground"
         />
 
         {/* ===== Kiemelt kis lámpamodul (kazetta) a projektoron belül ===== */}
@@ -196,59 +198,57 @@ function ModuleDiagram() {
           {/* Kazetta keret (utángyártott műanyag) */}
           <rect
             x="78" y="108" width="64" height="58" rx="3"
-            fill="color-mix(in oklab, var(--accent-amber) 12%, transparent)"
-            stroke="var(--accent-amber)" strokeWidth="1.6"
+            fill={c.amberWash}
+            stroke={c.amber} strokeWidth="1.6"
           />
           {/* Kis tükör/reflektor a kazettán belül */}
           <path
             d="M 86 118 Q 80 137 86 156 L 112 152 Q 108 137 112 122 Z"
             fill="none"
-            stroke="currentColor" strokeWidth="0.9"
-            className="text-muted-foreground"
+            stroke={c.muted} strokeWidth="0.9"
           />
           {/* Eredeti gyári izzó (kerámia talp + égő) */}
           <rect
             x="116" y="129" width="8" height="16" rx="1"
-            fill="color-mix(in oklab, var(--primary) 25%, transparent)"
-            stroke="currentColor" strokeWidth="0.9"
-            className="text-foreground"
+            fill={c.primaryWash}
+            stroke={c.ink} strokeWidth="0.9"
           />
           <ellipse
             cx="132" cy="137" rx="9" ry="6"
-            fill="var(--cta)"
-            stroke="currentColor" strokeWidth="0.9"
-            className="text-foreground"
+            fill={c.cta}
+            stroke={c.ink} strokeWidth="0.9"
           />
           <line x1="127" y1="137" x2="137" y2="137"
-                stroke="var(--cta-hover)" strokeWidth="1.2" />
+                stroke={c.ctaDeep} strokeWidth="1.2" />
         </g>
 
         {/* ===== Hívóvonalak és feliratok ===== */}
         {/* Kazetta (utángyártott keret) */}
-        <line x1="110" y1="166" x2="110" y2="210" stroke="var(--accent-amber)" strokeWidth="0.9" />
-        <text x="60" y="222" fontSize="10" fontWeight={600} fill="var(--cta)" fontFamily="ui-sans-serif, system-ui">
+        <line x1="110" y1="166" x2="110" y2="210" stroke={c.amber} strokeWidth="0.9" />
+        <text x="60" y="222" fontSize="10" fontWeight={600} fill={c.ink} fontFamily="ui-sans-serif, system-ui">
           Lámpamodul-kazetta
         </text>
-        <text x="60" y="234" fontSize="9" fill="currentColor" className="text-muted-foreground" fontFamily="ui-sans-serif, system-ui">
+        <text x="60" y="234" fontSize="9" fill={c.muted} fontFamily="ui-sans-serif, system-ui">
           (utángyártott műanyag keret)
         </text>
 
         {/* Eredeti izzó */}
-        <line x1="132" y1="127" x2="132" y2="42" stroke="currentColor" strokeWidth="0.7" className="text-muted-foreground" />
-        <polygon points="132,131 128,123 136,123" fill="currentColor" className="text-muted-foreground" />
-        <text x="132" y="20" textAnchor="middle" fontSize="10" fontWeight={600} fill="currentColor" className="text-foreground" fontFamily="ui-sans-serif, system-ui">
+        <line x1="132" y1="127" x2="132" y2="42" stroke={c.muted} strokeWidth="0.7" />
+        <polygon points="132,131 128,123 136,123" fill={c.muted} />
+        <text x="132" y="20" textAnchor="middle" fontSize="10" fontWeight={600} fill={c.ink} fontFamily="ui-sans-serif, system-ui">
           Eredeti gyári izzó
         </text>
-        <text x="132" y="32" textAnchor="middle" fontSize="9" fill="currentColor" className="text-muted-foreground" fontFamily="ui-sans-serif, system-ui">
+        <text x="132" y="32" textAnchor="middle" fontSize="9" fill={c.muted} fontFamily="ui-sans-serif, system-ui">
           (Philips / Osram / Ushio / Phoenix)
         </text>
       </svg>
-      <figcaption className="mt-2 text-[11px] italic text-muted-foreground leading-snug">
+      <figcaption className="mt-2 text-[11px] italic leading-snug" style={{ color: c.muted }}>
         Sematikus illusztráció. A lámpamodul a projektor házán belül egy
         kicsi, cserélhető kazetta — az utángyártás csak ezt a kazettát érinti,
         a benne lévő izzó az eredeti gyári alkatrész. Az adott típus
         tényleges geometriája eltérhet.
       </figcaption>
+      </div>
     </figure>
   );
 }
@@ -258,11 +258,15 @@ function ModuleDiagram() {
 /* -------------------------------------------------------------------------- */
 
 function SavingsChart() {
+  const surface = chartSurfaceProps({
+    className: "mt-4 rounded-lg border border-[#E2E5EB] p-3",
+  });
+  const c = chartColors;
   const W = 640;
   const H = 340;
   const padL = 40;
   const padR = 14;
-  const padT = 20;
+  const padT = 28;
   const padB = 72;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
@@ -274,9 +278,12 @@ function SavingsChart() {
   const yFor = (pct: number) => padT + (chartH * (100 - pct)) / 100;
 
   const ticks = [0, 25, 50, 75, 100];
+  const chipW = 36;
+  const chipH = 14;
+  const chipGap = 4;
 
   return (
-    <div className="mt-4 border border-border rounded-lg bg-card p-3">
+    <div className={surface.className} style={surface.style} data-chart-surface="light">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
@@ -293,17 +300,15 @@ function SavingsChart() {
                 x2={W - padR}
                 y1={y}
                 y2={y}
-                stroke="currentColor"
+                stroke={c.grid}
                 strokeWidth="0.5"
-                className="text-border"
               />
               <text
                 x={padL - 8}
                 y={y + 3}
                 textAnchor="end"
                 fontSize="10"
-                fill="currentColor"
-                className="text-muted-foreground"
+                fill={c.muted}
                 fontFamily="ui-sans-serif, system-ui"
               >
                 {t}%
@@ -319,6 +324,8 @@ function SavingsChart() {
           const ySplit = yFor(row.aftermarketPct); // megtakarítás / utángyártott határa
           const yBase = yFor(0);
           const savePct = 100 - row.aftermarketPct;
+          const cx = x + barW / 2;
+          const chipY = yTop - chipGap - chipH;
 
           return (
             <g key={row.id}>
@@ -328,7 +335,7 @@ function SavingsChart() {
                 y={yTop}
                 width={barW}
                 height={ySplit - yTop}
-                fill="var(--savings)"
+                fill={c.savings}
               />
               {/* Alsó szegmens: utángyártott ár */}
               <rect
@@ -336,54 +343,58 @@ function SavingsChart() {
                 y={ySplit}
                 width={barW}
                 height={yBase - ySplit}
-                fill="var(--cta)"
+                fill={c.cta}
               />
-              {/* % megtakarítás felirat az oszlop fölött */}
+              {/* Értékfelirat az oszlop fölött, fix papírháttérrel — nem érhet bele a sávba */}
+              <rect
+                x={cx - chipW / 2}
+                y={chipY}
+                width={chipW}
+                height={chipH}
+                rx={2}
+                fill={c.paper}
+              />
               <text
-                x={x + barW / 2}
-                y={yTop - 6}
+                x={cx}
+                y={chipY + 11}
                 textAnchor="middle"
                 fontSize="10"
                 fontWeight={600}
-                fill="currentColor"
-                className="text-foreground"
+                fill={c.ink}
                 fontFamily="ui-sans-serif, system-ui"
               >
                 −{savePct}%
               </text>
               {/* x tengely — sorszám */}
               <text
-                x={x + barW / 2}
+                x={cx}
                 y={H - padB + 14}
                 textAnchor="middle"
                 fontSize="9"
-                fill="currentColor"
-                className="text-muted-foreground"
+                fill={c.muted}
                 fontFamily="ui-sans-serif, system-ui"
               >
                 #{row.id}
               </text>
               {/* Izzó gyártója */}
               <text
-                x={x + barW / 2}
+                x={cx}
                 y={H - padB + 26}
                 textAnchor="middle"
                 fontSize="9"
                 fontWeight={600}
-                fill="currentColor"
-                className="text-foreground"
+                fill={c.ink}
                 fontFamily="ui-sans-serif, system-ui"
               >
                 {row.bulbBrand}
               </text>
               {/* Izzótípus */}
               <text
-                x={x + barW / 2}
+                x={cx}
                 y={H - padB + 37}
                 textAnchor="middle"
                 fontSize="8"
-                fill="currentColor"
-                className="text-muted-foreground"
+                fill={c.muted}
                 fontFamily="ui-sans-serif, system-ui"
               >
                 {row.bulbSpec}
@@ -398,19 +409,18 @@ function SavingsChart() {
           x2={W - padR}
           y1={yFor(0)}
           y2={yFor(0)}
-          stroke="currentColor"
+          stroke={c.grid}
           strokeWidth="1"
-          className="text-border"
         />
 
         {/* Jelmagyarázat */}
         <g transform={`translate(${padL}, ${H - 14})`}>
-          <rect width="12" height="10" fill="var(--cta)" />
-          <text x="18" y="9" fontSize="9" fill="currentColor" className="text-foreground" fontFamily="ui-sans-serif, system-ui">
+          <rect width="12" height="10" fill={c.cta} />
+          <text x="18" y="9" fontSize="9" fill={c.ink} fontFamily="ui-sans-serif, system-ui">
             Utángyártott modul ár (% az OEM-ből)
           </text>
-          <rect x="220" width="12" height="10" fill="var(--savings)" />
-          <text x="238" y="9" fontSize="9" fill="currentColor" className="text-foreground" fontFamily="ui-sans-serif, system-ui">
+          <rect x="220" width="12" height="10" fill={c.savings} />
+          <text x="238" y="9" fontSize="9" fill={c.ink} fontFamily="ui-sans-serif, system-ui">
             Megtakarítás
           </text>
         </g>

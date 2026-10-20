@@ -6,6 +6,7 @@ import * as XLSX from "xlsx";
 import { projectorBrands } from "@/data/brands";
 import { modelsForBrand } from "@/data/projector-models";
 import { trackEvent } from "@/lib/analytics";
+import { QUOTE_REQUEST_ACK_DETAIL, QUOTE_REQUEST_ACK_TITLE } from "@/lib/quote-request-ack";
 
 type ProductRow = {
   id: string;
@@ -246,11 +247,8 @@ export function QuoteForm({ productName, sku }: { productName?: string; sku?: st
   if (submitted) {
     return (
       <div className="border border-primary/30 bg-primary-soft/40 rounded p-6 text-sm">
-        <div className="font-medium text-primary-deep">Köszönjük, az árajánlat-kérést rögzítettük.</div>
-        <p className="text-muted-foreground mt-2">
-          Írásos, tételes ajánlattal válaszolunk — benne a készlettel, a szállítási
-          idővel és a mennyiségi árral.
-        </p>
+        <div className="font-medium text-primary-deep">{QUOTE_REQUEST_ACK_TITLE}</div>
+        <p className="text-muted-foreground mt-2">{QUOTE_REQUEST_ACK_DETAIL}</p>
       </div>
     );
   }

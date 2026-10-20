@@ -1,3 +1,5 @@
+import { QUOTE_REQUEST_ACK } from "@/lib/quote-request-ack";
+
 const MAX_NAME = 120;
 const MAX_EMAIL = 254;
 const MAX_PHONE = 40;
@@ -17,7 +19,7 @@ function asTrimmedString(value: unknown, max: number): string | null {
 
 export interface ContactResult {
   status: number;
-  body: { status: string } | { error: string };
+  body: { status: string; message: string } | { error: string };
 }
 
 export function processContactPayload(body: unknown): ContactResult {
@@ -62,7 +64,7 @@ export function processContactPayload(body: unknown): ContactResult {
     })
   );
 
-  return { status: 200, body: { status: "ok" } };
+  return { status: 200, body: { status: "ok", message: QUOTE_REQUEST_ACK } };
 }
 
 export async function handleContactPost(request: Request): Promise<Response> {

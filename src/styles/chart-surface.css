@@ -1,0 +1,60 @@
+/*
+ * Témafüggetlen diagram-felület.
+ *
+ * A statikus ábrák és a Recharts grafikonok nem vehetik át a globális
+ * sötét/világos mód színeit. A --foreground / --muted / --primary tokenek
+ * csupasz HSL-csatornák (globals.css) vagy oklch értékek (styles.css), és
+ * .dark alatt kicserélődnek — SVG fill="var(--…)" és currentColor ettől
+ * befeketedik vagy invertálódik.
+ *
+ * Új diagram: ChartContainer és a chartSurfaceProps() mindig ráteszi
+ * a .chart-container osztályt és a color-scheme / isolation inline stílust.
+ */
+
+.chart-container {
+  color-scheme: light;
+  isolation: isolate;
+  forced-color-adjust: none;
+  filter: none;
+  -webkit-filter: none;
+  background-color: #ffffff;
+  color: #1a1f2e;
+  --chart-paper: #ffffff;
+  --chart-ink: #1a1f2e;
+  --chart-muted: #6b7280;
+  --chart-grid: #e2e5eb;
+  --chart-wash: #f3f5f8;
+  --chart-amber: #e88b6a;
+  --chart-amber-wash: #fdf0ec;
+  --chart-cta: #f5d76e;
+  --chart-cta-deep: #e8b84a;
+  --chart-savings: #4caf6e;
+  --chart-primary: #5b8fbf;
+  --chart-primary-wash: #d6e6f2;
+  --chart-lens: #f8e4dc;
+  /* Régi ábra-hivatkozások, ha egy SVG még var(--cta)-t használ.
+     Ezek teljes színértékek, nem a Tailwind HSL-csatornái. */
+  --cta: #f5d76e;
+  --cta-hover: #e8b84a;
+  --savings: #4caf6e;
+  --accent-amber: #e88b6a;
+  /* A Recharts sorozatszínei is a világos palettán maradnak .dark alatt. */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+}
+
+.chart-container svg {
+  color: #1a1f2e;
+}
+
+/* A szülő filtere a gyermek pixeleit is lefesti; a filter nem öröklődik,
+   ezért filter: none a gyermeken nem vonja vissza. Visszainvertálás csak
+   akkor, ha az ős tényleg az invert-alapú sötét mód hackot használja. */
+.theme-invert .chart-container,
+[data-theme-invert] .chart-container {
+  filter: invert(1) hue-rotate(180deg);
+  -webkit-filter: invert(1) hue-rotate(180deg);
+}

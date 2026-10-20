@@ -4,13 +4,19 @@ import { getRawProducts } from "@/lib/data-provider";
 import { competitorSamples } from "@/data/competitor.server";
 import { adminAuthResponse, requireAdminUser } from "@/lib/admin-auth";
 import { suggestOptimalPrice } from "@/lib/pricing/suggest";
+import {
+  DEFAULT_TARGET_MARGIN_PCT,
+  DEFAULT_UNDERCUT_PCT,
+} from "@/lib/pricing/eur-check.mjs";
 
 export async function GET(request: Request) {
   try {
     await requireAdminUser();
     const { searchParams } = new URL(request.url);
-    const targetMarginPct = Number(searchParams.get("targetMarginPct") ?? "40");
-    const undercutPct = Number(searchParams.get("undercutPct") ?? "20");
+    const targetMarginPct = Number(
+      searchParams.get("targetMarginPct") ?? String(DEFAULT_TARGET_MARGIN_PCT),
+    );
+    const undercutPct = Number(searchParams.get("undercutPct") ?? String(DEFAULT_UNDERCUT_PCT));
 
     const products = getRawProducts();
 

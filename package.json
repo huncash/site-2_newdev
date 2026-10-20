@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start --port 3001",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check:charts": "node scripts/check-chart-surface.mjs",
+    "check:quote-ack": "node scripts/check-quote-ack.mjs",
+    "check:prices": "node scripts/check-public-prices.mjs",
+    "check:price-alerts": "node scripts/check-price-alerts.mjs",
     "deploy": "git add . && git commit -m \"Auto deploy\" && git push origin main && ssh vmvrgohu@195.228.152.141 \"cd /var/www/site-2 && git remote set-url origin https://github.com/huncash/site-2_newdev.git && git fetch origin && git reset --hard origin/main && npm install && rm -rf .next && npm run build && pm2 delete site-2 || true && pm2 start npm --name site-2 -- start && pm2 save\""
   },
   "dependencies": {
@@ -50,6 +54,7 @@
     "lucide-react": "^0.525.0",
     "next": "^15.3.5",
     "next-themes": "^0.4.6",
+    "nodemailer": "^10.1.7",
     "react": "^19.1.0",
     "react-day-picker": "^9.8.0",
     "react-dom": "^19.1.0",

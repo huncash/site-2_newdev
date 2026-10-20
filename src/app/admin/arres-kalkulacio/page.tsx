@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { listCompetitorSamples } from "@/lib/admin-pricing.functions";
+import {
+  DEFAULT_UNDERCUT_PCT,
+  MIN_MARKUP_PCT,
+  bulbSellNet,
+  hufFromEur,
+  marginOf,
+  undercutNet,
+} from "@/lib/pricing/eur-check.mjs";
 
 type CompetitorRow = {
   id: string;
@@ -88,7 +96,7 @@ function ArresKalkulacioPage() {
     setBulbCompetitorMap(empty);
   }, [competitorSamples]);
   // Globális undercut % — mennyivel megyünk a konkurens nettó ára alá.
-  const [undercutPct, setUndercutPct] = useState<number>(20);
+  const [undercutPct, setUndercutPct] = useState<number>(DEFAULT_UNDERCUT_PCT);
 
   // EUR → HUF napi árfolyam. Forrás: frankfurter.dev (ECB-alapú, CORS-friendly).
   // Az MNB középárfolyamot a tulaj kézzel felülírhatja az input mezőben.
@@ -133,36 +141,34 @@ function ArresKalkulacioPage() {
     return competitorSamples.map((r) => {
       const costEur = costs[r.id];
       const costEurNum = typeof costEur === "number" ? costEur : NaN;
-      const costHufNum = isFinite(costEurNum) && effectiveRate > 0 ? costEurNum * effectiveRate : NaN;
-      const ourPrice = r.competitorNetHuf * (1 - undercutPct / 100);
-      const margin = isFinite(costHufNum) ? ourPrice - costHufNum : NaN;
-      const marginPct = isFinite(margin) && ourPrice > 0 ? (margin / ourPrice) * 100 : NaN;
-      const markupPct = isFinite(margin) && costHufNum > 0 ? (margin / costHufNum) * 100 : NaN;
+      const costHufNum = hufFromEur(costEurNum, effectiveRate) ?? NaN;
+      const ourPrice = undercutNet(r.competitorNetHuf, undercutPct);
+      const moduleMargin = Number.isFinite(costHufNum) ? marginOf(ourPrice, costHufNum) : null;
+      const margin = moduleMargin?.marginHuf ?? NaN;
+      const marginPct = moduleMargin?.marginPct ?? NaN;
+      const markupPct = moduleMargin?.markupPct ?? NaN;
 
       // Csak izzó (foglalat nélkül) — párhuzamos számítás.
       const bulbCostEur = bulbCosts[r.id];
       const bulbCostEurNum = typeof bulbCostEur === "number" ? bulbCostEur : NaN;
-      const bulbCostHufNum =
-        isFinite(bulbCostEurNum) && effectiveRate > 0 ? bulbCostEurNum * effectiveRate : NaN;
+      const bulbCostHufNum = hufFromEur(bulbCostEurNum, effectiveRate) ?? NaN;
       const bulbCompetitorRaw = bulbCompetitor[r.id];
       const bulbCompetitorNet =
         typeof bulbCompetitorRaw === "number" ? bulbCompetitorRaw : NaN;
-      const bulbPriceMode: "undercut" | "double" | "—" = isFinite(bulbCompetitorNet)
-        ? "undercut"
-        : isFinite(bulbCostHufNum)
-          ? "double"
-          : "—";
-      const ourBulbPrice =
-        bulbPriceMode === "undercut"
-          ? bulbCompetitorNet * (1 - undercutPct / 100)
-          : bulbPriceMode === "double"
-            ? bulbCostHufNum * 2
-            : NaN;
-      const bulbMargin = isFinite(ourBulbPrice) && isFinite(bulbCostHufNum)
-        ? ourBulbPrice - bulbCostHufNum
-        : NaN;
-      const bulbMarkupPct =
-        isFinite(bulbMargin) && bulbCostHufNum > 0 ? (bulbMargin / bulbCostHufNum) * 100 : NaN;
+      const bulbQuote = bulbSellNet({
+        costHuf: Number.isFinite(bulbCostHufNum) ? bulbCostHufNum : null,
+        competitorNetHuf: Number.isFinite(bulbCompetitorNet) ? bulbCompetitorNet : null,
+        undercutPct,
+      });
+      const bulbPriceMode: "undercut" | "double" | "—" =
+        bulbQuote.mode === "undercut" || bulbQuote.mode === "double" ? bulbQuote.mode : "—";
+      const ourBulbPrice = bulbQuote.price ?? NaN;
+      const bulbMarginStats =
+        Number.isFinite(ourBulbPrice) && Number.isFinite(bulbCostHufNum)
+          ? marginOf(ourBulbPrice, bulbCostHufNum)
+          : null;
+      const bulbMargin = bulbMarginStats?.marginHuf ?? NaN;
+      const bulbMarkupPct = bulbMarginStats?.markupPct ?? NaN;
 
       return {
         ...r,
@@ -501,7 +507,7 @@ function Row({
 }) {
   const filled = isFinite(row.costHuf);
   const positive = filled && row.margin > 0;
-  const tight = filled && row.markupPct < 15;
+  const tight = filled && row.markupPct < MIN_MARKUP_PCT;
   const bulbFilled = isFinite(row.ourBulbPrice);
   const bulbTight = bulbFilled && isFinite(row.bulbMarkupPct) && row.bulbMarkupPct < 60;
   return (

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import "@/styles/globals.css";
+import "@/styles/chart-surface.css";
 
 export const metadata: Metadata = {
   title: "Projektorlámpacsere",
