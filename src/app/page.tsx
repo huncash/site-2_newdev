@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CONTENT } from "@/data/content";
-import { products } from "@/data/catalog";
 import { ProductCard } from "@/components/ProductCard";
+import { publicProducts } from "@/lib/public-catalog";
+
+export const dynamic = "force-dynamic";
 
 const lampDiagram = "/assets/lamp-replacement-diagram.png";
 const lampModuleImg = "/assets/projector-lamp-module.jpg";
@@ -14,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 function Home() {
+  const products = publicProducts();
   const featured = products.slice(0, 4);
   const fixedPriced = CONTENT.fixedPrice.items
     .map((item) => products.find((p) => p.slug === item.slug))

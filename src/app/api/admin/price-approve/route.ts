@@ -1,11 +1,10 @@
-import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { NextResponse } from "next/server";
 
+import { applyApprovedNets, readApprovedPrices, writeApprovedPrices } from "@/lib/pricing/approved-prices.mjs";
 import {
-  applyFeaturedNets,
   approveTokenMatches,
   assertProposalApplicable,
   renderConfirmHtml,
@@ -31,7 +30,7 @@ type PriceProposal = {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 900;
+export const maxDuration = 60;
 
 const LOCK_MS = 20 * 60 * 1000;
 
@@ -109,25 +108,28 @@ function releaseLock() {
   if (existsSync(path)) rmSync(path, { force: true });
 }
 
-function runBuild() {
-  const npm = process.platform === "win32" ? "npm.cmd" : "npm";
-  return new Promise<void>((resolve, reject) => {
-    const child = spawn(npm, ["run", "build"], {
-      cwd: process.cwd(),
-      shell: false,
-      windowsHide: true,
-    });
-    let stderr = "";
-    child.stderr.on("data", (chunk: Buffer) => {
-      stderr += chunk.toString();
-      if (stderr.length > 8000) stderr = stderr.slice(-8000);
-    });
-    child.on("error", reject);
-    child.on("close", (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(stderr.slice(-400) || `build kilépés ${code}`));
-    });
-  });
+function writeBaseline(proposal: PriceProposal) {
+  writeFileSync(
+    join(privateDir(), "price-monitor-baseline.json"),
+    JSON.stringify(
+      {
+        checkedAt: new Date().toISOString(),
+        rateHufPerEur: proposal.rateHufPerEur,
+        rateSource: proposal.rateSource,
+        costs: proposal.costs,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+function writeEventLog(proposal: PriceProposal, baseline: "ok" | "hiba") {
+  const skus = proposal.changes.map((change) => `${change.sku} ${change.oldNetHuf}→${change.newNetHuf}`).join(", ");
+  appendFileSync(
+    join(privateDir(), "price-approve.log"),
+    `${new Date().toISOString()} elfogadva ${skus} árfolyam=${proposal.rateHufPerEur} forrás=${proposal.rateSource} tárolás=private_data/approved-prices.json baseline=${baseline}\n`,
+  );
 }
 
 async function executeApproval() {
@@ -136,61 +138,49 @@ async function executeApproval() {
       403,
       renderMessageHtml(
         "Helyi védelem",
-        "Fejlesztői módban az élesítés nem fut. A szerveren a kattintás írja be az árakat, futtatja a buildet és újraindítja a site-2 folyamatot.",
+        "Fejlesztői módban az élesítés nem fut. A szerveren a kattintás a private_data/approved-prices.json fájlba írja a nettó árakat.",
       ),
     );
   }
   if (!acquireLock()) {
     return html(409, renderMessageHtml("Élesítés már fut", "Egy korábbi jóváhagyás még dolgozik. Várd meg a végét."));
   }
-  let handedOff = false;
-  let original = "";
-  let catalogWritten = false;
-  const catalogPath = join(process.cwd(), "src", "data", "catalog.ts");
+  let pricesWritten = false;
   try {
     const proposal = readPending();
     if (!proposal) {
       return html(404, renderMessageHtml("Nincs várakozó árazás", "Nincs élő jóváhagyási csomag. A heti figyelő új levele hoz újat."));
     }
-    const source = readFileSync(catalogPath, "utf8");
-    original = source;
-    const products = loadFeatured(source);
+    const source = readFileSync(join(process.cwd(), "src", "data", "catalog.ts"), "utf8");
+    const products = applyApprovedNets(loadFeatured(source), readApprovedPrices(process.cwd()));
     assertProposalApplicable(proposal, products, loadCosts());
-    const next = applyFeaturedNets(source, proposal.changes);
-    writeFileSync(catalogPath, next);
-    catalogWritten = true;
-    await runBuild();
-    writeFileSync(
-      join(privateDir(), "price-approve-job.json"),
-      JSON.stringify({
-        rateHufPerEur: proposal.rateHufPerEur,
-        rateSource: proposal.rateSource,
-        costs: proposal.costs,
-        changes: proposal.changes.map((change: PriceProposal["changes"][number]) => ({
-          sku: change.sku,
-          oldNetHuf: change.oldNetHuf,
-          newNetHuf: change.newNetHuf,
-        })),
-      }),
-    );
+    writeApprovedPrices(process.cwd(), proposal.changes);
+    pricesWritten = true;
+    let baseline: "ok" | "hiba" = "ok";
+    try {
+      writeBaseline(proposal);
+    } catch (error) {
+      baseline = "hiba";
+      console.error("price-approve", error instanceof Error ? error.message : "baseline nem frissült");
+    }
+    writeEventLog(proposal, baseline);
     rmSync(join(privateDir(), "price-approve-pending.json"), { force: true });
-    const child = spawn(process.execPath, [join(process.cwd(), "scripts", "price-approve-restart.mjs")], {
-      cwd: process.cwd(),
-      detached: true,
-      stdio: "ignore",
-      windowsHide: true,
-      shell: false,
-    });
-    child.unref();
-    handedOff = true;
     return html(200, renderSuccessHtml(proposal));
   } catch (error) {
-    if (catalogWritten) writeFileSync(catalogPath, original);
     const message = error instanceof Error ? error.message : "az élesítés megállt";
-    console.error("price-approve", message);
-    return html(500, renderMessageHtml("Az élesítés megállt", message));
+    if (pricesWritten && existsSync(join(privateDir(), "price-approve-pending.json"))) {
+      rmSync(join(privateDir(), "price-approve-pending.json"), { force: true });
+    }
+    if (!pricesWritten) console.error("price-approve", message);
+    return html(
+      500,
+      renderMessageHtml(
+        pricesWritten ? "Az árjegyzék megvan, a napló hiányzik" : "Az élesítés megállt",
+        message,
+      ),
+    );
   } finally {
-    if (!handedOff) releaseLock();
+    releaseLock();
   }
 }
 

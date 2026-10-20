@@ -1,6 +1,6 @@
 /**
- * ECB EUR/HUF, jóváhagyási csomag és katalógus-ármódosítás.
- * A heti figyelő csak csomagot készít. Publikus árat a webhook ír, emberi kattintásra.
+ * ECB EUR/HUF és jóváhagyási csomag.
+ * A heti figyelő csak csomagot készít. A webhook a private_data árjegyzékbe ír, emberi kattintásra.
  */
 import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
@@ -277,7 +277,7 @@ export function rateLabel(rateInfo) {
 export function renderAlertEmail({ rateInfo, rows, approveUrl: href, missingButtonReason }) {
   const rule = `Szabály: cél árrés ${DEFAULT_TARGET_MARGIN_PCT}%, minimum markup 15%, ÁFA ${Math.round((VAT_MULTIPLIER - 1) * 100)}%.`;
   const intro =
-    "A figyelő nem módosított publikus árat. Az élesítés a gomb kattintásakor indul.";
+    "A figyelő nem módosított publikus árat. Az árjegyzék csak a gomb kattintásakor frissül.";
   const text = [
     "projektorlampacsere.hu heti árfigyelő",
     `Árfolyam: ${rateLabel(rateInfo)}`,
@@ -320,7 +320,7 @@ export function renderAlertEmail({ rateInfo, rows, approveUrl: href, missingButt
 
   const button = href
     ? `<p style="margin:24px 0;"><a href="${esc(href)}" style="display:inline-block;background:#1f7a3a;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:8px;">✅ Árak elfogadása és élesítése</a></p>
-       <p style="font-size:13px;color:#3d4654;">A gomb a jóváhagyó címre visz. Ár, build és újraindítás csak ebből a kattintásból indul.</p>`
+       <p style="font-size:13px;color:#3d4654;">A gomb a jóváhagyó címre visz. A publikus ár csak ebből a kattintásból változik, a katalógus forrása nem.</p>`
     : `<p>${esc(missingButtonReason || "Jóváhagyó gomb nincs ebben a levélben.")}</p>`;
 
   const html = `<!DOCTYPE html>
@@ -392,7 +392,7 @@ export function renderConfirmHtml(proposal, token) {
     .join("");
   const body = `
     <p>Árfolyam a levélben: 1 € = ${esc(proposal.rateHufPerEur.toLocaleString("hu-HU"))} Ft (${esc(proposal.rateSource)}).</p>
-    <p>Ez a lépés írja be az alábbi nettó árakat, lefut a build, majd a site-2 folyamat újraindul.</p>
+    <p>Ez a lépés az alábbi nettó árakat a gitignore-olt private_data/approved-prices.json fájlba írja. A katalógus forrása és a Git deploy nem nyúl hozzá. A következő oldalbetöltés már ezt az árat mutatja.</p>
     <table style="width:100%;border-collapse:collapse;">
       <thead><tr><th align="left">Cikkszám</th><th align="left">EUR</th><th align="left">Most</th><th align="left">Új nettó</th></tr></thead>
       <tbody>${rows}</tbody>
@@ -412,9 +412,9 @@ export function renderSuccessHtml(proposal) {
     )
     .join("");
   const body = `
-    <p>A publikus nettó árak bekerültek a katalógusba, a build lefutott. A site-2 újraindítása most indul.</p>
+    <p>A jóváhagyott nettó árak a private_data/approved-prices.json fájlban vannak. A következő oldalbetöltés ezt mutatja. A Git deploy a fájlt nem érinti.</p>
     <ul>${rows}</ul>
-    <p>Az eseménynapló a sikeres újraindítás után készül el.</p>`;
+    <p>Az eseménynapló a sikeres írás után készült el.</p>`;
   return pageShell("Az árak élesítve", body);
 }
 

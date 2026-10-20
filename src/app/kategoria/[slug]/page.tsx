@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getCategory, productsByCategory, type Category, type Product } from "@/data/catalog";
+import { getCategory, type Category, type Product } from "@/data/catalog";
 import { ProductCard } from "@/components/ProductCard";
+import { publicProductsByCategory } from "@/lib/public-catalog";
+
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -17,7 +20,7 @@ export default async function Page({ params }: Props) {
   const { slug } = await params;
   const category = getCategory(slug);
   if (!category) notFound();
-  return <CategoryView category={category} products={productsByCategory(slug)} />;
+  return <CategoryView category={category} products={publicProductsByCategory(slug)} />;
 }
 
 

@@ -44,6 +44,8 @@ export type Product = {
    *  - "standard": szokásos kiemelt fix ár,
    *  - "marketing": akciós belépő ajánlat (látható hangsúllyal).
    * Ha hiányzik, a termék a megszokott „Egyedi árajánlat" CTA-val jelenik meg.
+   * Az éles nettó a gitignore-olt private_data/approved-prices.json felülírása.
+   * Az itteni szám a tartalék, ha ahhoz a cikkszámhoz nincs jóváhagyott ár.
    */
   featuredPrice?: {
     netHuf: number;

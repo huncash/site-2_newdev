@@ -12,6 +12,7 @@ import {
   marginOf,
   undercutNet,
 } from "../src/lib/pricing/eur-check.mjs";
+import { applyApprovedNets, loadApprovedPrices } from "../src/lib/pricing/approved-prices.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (path) => readFileSync(join(root, path), "utf8");
@@ -109,7 +110,9 @@ function eur(n) {
 
 assertRules();
 
-const featured = loadFeatured(read("src/data/catalog.ts"));
+const approved = loadApprovedPrices(root);
+if (approved.warning) console.error(approved.warning);
+const featured = applyApprovedNets(loadFeatured(read("src/data/catalog.ts")), approved.record);
 const competitors = loadCompetitors(read("src/data/competitor.server.ts"));
 if (featured.length === 0) {
   console.error("nincs publikus featuredPrice a katalógusban");

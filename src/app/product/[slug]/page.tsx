@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getCategory, getProduct, getProductStock, type Category, type Product } from "@/data/catalog";
+import { getCategory, getProductStock, type Category, type Product } from "@/data/catalog";
 import { getDeliveryPromise } from "@/data/shipping";
 import { PriceBadge } from "@/components/PriceBadge";
+import { publicProduct } from "@/lib/public-catalog";
+
+export const dynamic = "force-dynamic";
 
 const lampModuleImg = "/assets/projector-lamp-module.jpg";
 const uhpUheLampLineDrawing = "/assets/uhp-uhe-lamp-line-drawing.png";
@@ -16,7 +19,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = publicProduct(slug);
   if (!product) return {};
   return {
     title: `${product.sku} ${product.brand} projektor izzó / lámpamodul — projektorlampacsere.hu`,
@@ -26,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = publicProduct(slug);
   if (!product) notFound();
   const category = getCategory(product.categorySlug);
   return <ProductView product={product} category={category} />;

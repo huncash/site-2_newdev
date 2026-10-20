@@ -1,5 +1,5 @@
 /**
- * Heti árfigyelő. Publikus árat NEM ír át — azt a jóváhagyó webhook teszi, kattintásra.
+ * Heti árfigyelő. Publikus árat NEM ír át — a webhook a private_data/approved-prices.json fájlba ír, kattintásra.
  *
  * Crontab — hétfő 07:15, Europe/Budapest (a szerveren egyszer):
  *
@@ -41,6 +41,7 @@ import {
   redactSecrets,
   renderAlertEmail,
 } from "../src/lib/pricing/price-approve.mjs";
+import { applyApprovedNets, loadApprovedPrices } from "../src/lib/pricing/approved-prices.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ALERT_TO = "adptopkft@gmail.com";
@@ -199,7 +200,9 @@ assertFormula();
 loadProjectEnv(root);
 
 const rateInfo = await fetchEurHufRate();
-const products = loadFeatured(readFileSync(CATALOG_PATH, "utf8"));
+const approved = loadApprovedPrices(root);
+if (approved.warning) console.error(approved.warning);
+const products = applyApprovedNets(loadFeatured(readFileSync(CATALOG_PATH, "utf8")), approved.record);
 if (products.length === 0) {
   console.error("nincs publikus featuredPrice");
   process.exitCode = 2;
